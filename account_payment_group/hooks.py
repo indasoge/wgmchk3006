@@ -1,6 +1,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import logging
-from odoo import api, SUPERUSER_ID
+from odoo import api, SUPERUSER_ID, _
 _logger = logging.getLogger(__name__)
 
 
@@ -23,6 +23,7 @@ def post_init_hook(cr, registry):
         # These receipts boooks will be used to create the corresponding account.payment.group groups
 
         #Normally in the post-init-hook we shouldn't have any receiptbook, but we test it anyhow
+        _logger.info('Checking for receipts books')
         receipt_client = env['account.payment.receiptbook'].search(['partner_type','=','customer'])
         receipt_vendor = env['account.payment.receiptbook'].search(['partner_type','=','supplier'])
 
@@ -34,6 +35,7 @@ def post_init_hook(cr, registry):
                 'padding': 8,
                 'number_increment': 1
             }
+            _logger.info('creating receipt book for customers')
             sequence = env['ir.sequence'].create(seq_vals)
             document_type = env['l10n_latam.document.type'].search(['doc_code_prefix','=','RE-X'])
             vals = {
@@ -47,8 +49,9 @@ def post_init_hook(cr, registry):
                 'mail_template_id': False,
             }
             receipt_client = env['account.payment.receiptbook'].create(vals)
+            _logger.info('Receipt book for customers created:  %s' % receipt_client.id)
         else:
-            #To complete
+            _logger.info('We should not have any receipts books on init, quiting...')
             return
         
         if len(receipt_vendor) == 0:
@@ -59,6 +62,7 @@ def post_init_hook(cr, registry):
                 'padding': 8,
                 'number_increment': 1
             }
+            _logger.info('creating receipt book for customers')
             sequence = env['ir.sequence'].create(seq_vals)
             document_type = env['l10n_latam.document.type'].search(['doc_code_prefix','=','OP-X'])
             vals = {
@@ -72,8 +76,9 @@ def post_init_hook(cr, registry):
                 'mail_template_id': False,
             }
             receipt_client = env['account.payment.receiptbook'].create(vals)
+            _logger.info('Receipt book for vendors created:  %s' % receipt_vendor.id)
         else:
-            #To complete
+            _logger.info('We should not have any receipts books on init, quiting...')
             return
 
     for payment in payments:
